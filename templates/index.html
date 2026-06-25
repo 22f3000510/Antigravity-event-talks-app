@@ -14,12 +14,6 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body class="dark-theme">
-    <!-- Theme Toggle Floating Button -->
-    <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">
-        <i data-lucide="sun" class="sun-icon"></i>
-        <i data-lucide="moon" class="moon-icon"></i>
-    </button>
-
     <div class="app-container">
         <!-- Header -->
         <header class="app-header">
@@ -44,11 +38,26 @@
             </div>
             
             <div class="header-actions">
+                <!-- Theme Toggle Switch -->
+                <div class="theme-switch-container">
+                    <i data-lucide="sun" class="switch-icon-sun"></i>
+                    <label class="switch-control" for="theme-checkbox">
+                        <input type="checkbox" id="theme-checkbox">
+                        <span class="switch-slider"></span>
+                    </label>
+                    <i data-lucide="moon" class="switch-icon-moon"></i>
+                </div>
+
                 <div class="cache-indicator" id="cache-status-container">
                     <span class="indicator-dot" id="cache-dot"></span>
                     <span id="cache-text">Checking status...</span>
                 </div>
                 
+                <button id="export-csv-btn" class="btn btn-secondary">
+                    <i data-lucide="download"></i>
+                    <span>Export CSV</span>
+                </button>
+
                 <button id="refresh-btn" class="btn btn-primary">
                     <i data-lucide="refresh-cw" class="icon-refresh"></i>
                     <span>Refresh</span>

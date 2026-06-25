@@ -101,39 +101,96 @@ a:hover {
     text-decoration: underline;
 }
 
-/* Theme Toggle Button */
-.theme-toggle-btn {
-    position: fixed;
-    bottom: 2rem;
-    right: 2rem;
-    width: 3.5rem;
-    height: 3.5rem;
-    border-radius: 50%;
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    color: var(--text-primary);
-    cursor: pointer;
+/* Theme Switch CSS Toggle */
+.theme-switch-container {
     display: flex;
     align-items: center;
-    justify-content: center;
-    box-shadow: var(--shadow-premium);
-    z-index: 100;
+    gap: 0.5rem;
+    padding: 0.4rem 0.6rem;
+    background: var(--bg-chip-inactive);
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+}
+
+.switch-control {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 20px;
+}
+
+.switch-control input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.switch-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--color-default);
+    transition: .4s;
+    border-radius: 20px;
+}
+
+.switch-slider:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .switch-slider {
+    background: var(--gradient-accent);
+}
+
+input:checked + .switch-slider:before {
+    transform: translateX(20px);
+}
+
+.switch-icon-sun {
+    width: 14px;
+    height: 14px;
+    color: var(--text-secondary);
     transition: var(--transition-smooth);
 }
 
-.theme-toggle-btn:hover {
-    transform: scale(1.1) rotate(15deg);
-    border-color: var(--border-color-hover);
+.switch-icon-moon {
+    width: 14px;
+    height: 14px;
+    color: var(--text-secondary);
+    transition: var(--transition-smooth);
 }
 
-body.dark-theme .sun-icon,
-body.light-theme .moon-icon {
-    display: block;
+body.light-theme .switch-icon-sun {
+    color: #eab308;
+    filter: drop-shadow(0 0 3px rgba(234, 179, 8, 0.5));
 }
 
-body.dark-theme .moon-icon,
-body.light-theme .sun-icon {
-    display: none;
+body.dark-theme .switch-icon-moon {
+    color: #a78bfa;
+    filter: drop-shadow(0 0 3px rgba(167, 139, 250, 0.5));
+}
+
+.action-btn.copy-btn:hover {
+    border-color: var(--color-feature);
+    color: var(--color-feature);
+    background-color: var(--color-feature-bg);
+}
+
+.action-btn.copy-btn.success {
+    border-color: var(--color-feature);
+    color: #ffffff;
+    background-color: var(--color-feature);
 }
 
 /* Container */
@@ -951,11 +1008,5 @@ body.light-theme .modal-footer {
     }
     .filter-chip {
         white-space: nowrap;
-    }
-    .theme-toggle-btn {
-        bottom: 1rem;
-        right: 1rem;
-        width: 3rem;
-        height: 3rem;
     }
 }

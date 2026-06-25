@@ -5,7 +5,8 @@ let currentFilter = 'all';
 
 // DOM Elements
 const refreshBtn = document.getElementById('refresh-btn');
-const themeToggleBtn = document.getElementById('theme-toggle');
+const themeCheckbox = document.getElementById('theme-checkbox');
+const exportCsvBtn = document.getElementById('export-csv-btn');
 const searchInput = document.getElementById('search-input');
 const clearSearchBtn = document.getElementById('clear-search');
 const filterChips = document.querySelectorAll('.filter-chip');
@@ -65,9 +66,11 @@ function initTheme() {
     if (savedTheme === 'light') {
         document.body.classList.remove('dark-theme');
         document.body.classList.add('light-theme');
+        if (themeCheckbox) themeCheckbox.checked = false;
     } else {
         document.body.classList.remove('light-theme');
         document.body.classList.add('dark-theme');
+        if (themeCheckbox) themeCheckbox.checked = true;
     }
     updateThemeIcon();
 }
@@ -83,19 +86,26 @@ function setupEventListeners() {
     refreshBtn.addEventListener('click', () => fetchReleases(true));
     retryBtn.addEventListener('click', () => fetchReleases(true));
     
-    // Theme toggle
-    themeToggleBtn.addEventListener('click', () => {
-        if (document.body.classList.contains('dark-theme')) {
-            document.body.classList.remove('dark-theme');
-            document.body.classList.add('light-theme');
-            localStorage.setItem('theme', 'light');
-        } else {
-            document.body.classList.remove('light-theme');
-            document.body.classList.add('dark-theme');
-            localStorage.setItem('theme', 'dark');
-        }
-        updateThemeIcon();
-    });
+    // Theme toggle via checkbox
+    if (themeCheckbox) {
+        themeCheckbox.addEventListener('change', () => {
+            if (themeCheckbox.checked) {
+                document.body.classList.remove('light-theme');
+                document.body.classList.add('dark-theme');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.body.classList.remove('dark-theme');
+                document.body.classList.add('light-theme');
+                localStorage.setItem('theme', 'light');
+            }
+            updateThemeIcon();
+        });
+    }
+
+    // Export CSV action
+    if (exportCsvBtn) {
+        exportCsvBtn.addEventListener('click', exportToCSV);
+    }
     
     // Search inputs
     searchInput.addEventListener('input', (e) => {
@@ -299,6 +309,26 @@ function createUpdateCard(item) {
     const cardActions = document.createElement('div');
     cardActions.className = 'card-actions';
     
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'action-btn copy-btn';
+    copyBtn.setAttribute('title', 'Copy text to clipboard');
+    copyBtn.innerHTML = '<i data-lucide="copy"></i>';
+    copyBtn.addEventListener('click', async () => {
+        try {
+            await navigator.clipboard.writeText(item.text);
+            copyBtn.innerHTML = '<i data-lucide="check"></i>';
+            copyBtn.classList.add('success');
+            lucide.createIcons();
+            setTimeout(() => {
+                copyBtn.innerHTML = '<i data-lucide="copy"></i>';
+                copyBtn.classList.remove('success');
+                lucide.createIcons();
+            }, 1500);
+        } catch (err) {
+            console.error('Failed to copy text: ', err);
+        }
+    });
+
     const tweetBtn = document.createElement('button');
     tweetBtn.className = 'action-btn tweet-btn';
     tweetBtn.setAttribute('title', 'Select and Tweet this update');
@@ -313,6 +343,7 @@ function createUpdateCard(item) {
     linkBtn.setAttribute('title', 'View original release notes documentation');
     linkBtn.innerHTML = '<i data-lucide="external-link"></i>';
     
+    cardActions.appendChild(copyBtn);
     cardActions.appendChild(tweetBtn);
     cardActions.appendChild(linkBtn);
     
@@ -403,4 +434,49 @@ function updateCharCount() {
             progressCircle.style.stroke = '#1da1f2'; // Blue
         }
     }
+}
+
+// Export to CSV Functionality
+function exportToCSV() {
+    if (!releaseData || !releaseData.releases) return;
+    
+    const csvRows = [];
+    csvRows.push(['Date', 'Type', 'Description', 'Link']);
+    
+    releaseData.releases.forEach(group => {
+        group.items.forEach(item => {
+            const matchesType = (currentFilter === 'all' || item.type.toLowerCase() === currentFilter);
+            const matchesSearch = (!currentSearch || 
+                group.date.toLowerCase().includes(currentSearch) ||
+                item.type.toLowerCase().includes(currentSearch) ||
+                item.text.toLowerCase().includes(currentSearch)
+            );
+            
+            if (matchesType && matchesSearch) {
+                const cleanText = item.text.replace(/\s+/g, ' ').trim();
+                csvRows.push([group.date, item.type, cleanText, item.link]);
+            }
+        });
+    });
+    
+    const csvString = csvRows.map(row => 
+        row.map(value => {
+            const stringValue = String(value);
+            const escaped = stringValue.replace(/"/g, '""');
+            if (escaped.includes(',') || escaped.includes('\n') || escaped.includes('"')) {
+                return `"${escaped}"`;
+            }
+            return escaped;
+        }).join(',')
+    ).join('\n');
+    
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `BigQuery_Release_Notes_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
